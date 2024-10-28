@@ -1,12 +1,12 @@
-const traceroute = require('traceroute');
-const dns = require('dns');
+const { exec } = require('node:child_process');
+const dns = require('node:dns');
 const axios = require('axios');
 const geoip = require('geoip-lite');
 
 const URLS = [
-    'wistia.com',
-    'fast.wistia.com',
-    'fast.wistia.net',
+    'https://wistia.com',
+    'https://fast.wistia.com',
+    'https://fast.wistia.net',
     'https://www.google-analytics.com/collect',
     'https://track.hubspot.com'
 ];
@@ -42,26 +42,38 @@ async function checkConnectivity() {
     }
 }
 
-function performTraceroute() {
+async function performTraceroute() {
     const resultsDiv = document.getElementById('traceroute-results');
     
-    URLS.forEach(url => {
-        const cleanUrl = url.replace('https://', '').replace('http://', '');
-        
-        traceroute.trace(cleanUrl, (err, hops) => {
-            if (err) {
-                resultsDiv.innerHTML += `
-                    <div class="alert alert-danger">
-                        Traceroute failed for ${url}: ${err}
-                    </div>`;
-                return;
-            }
+    for (const url of URLS) {
+        try {
+            const cleanUrl = url.replace('https://', '').replace('http://', '');
+            const cmd = process.platform === 'win32' ? `tracert ${cleanUrl}` : `traceroute ${cleanUrl}`;
+            
+            const output = await new Promise((resolve, reject) => {
+                exec(cmd, (error, stdout, stderr) => {
+                    if (error) reject(error);
+                    else resolve(stdout);
+                });
+            });
+
+            // Parse the output into a more readable format
+            const hops = output.split('\n')
+                .filter(line => line.match(/^\s*\d+/)) // Only lines starting with numbers
+                .map(line => {
+                    const parts = line.trim().split(/\s+/);
+                    return {
+                        hop: parts[0],
+                        ip: parts[1],
+                        time: parts[parts.length - 1]
+                    };
+                });
 
             let hopsList = '<ul class="list-group">';
             hops.forEach(hop => {
                 hopsList += `
                     <li class="list-group-item">
-                        ${hop.hop}. ${hop.ip} (${hop.rtt1}ms)
+                        ${hop.hop}. ${hop.ip} (${hop.time})
                     </li>`;
             });
             hopsList += '</ul>';
@@ -69,8 +81,13 @@ function performTraceroute() {
             resultsDiv.innerHTML += `
                 <h6 class="mt-3">${url}</h6>
                 ${hopsList}`;
-        });
-    });
+        } catch (error) {
+            resultsDiv.innerHTML += `
+                <div class="alert alert-danger">
+                    Traceroute failed for ${url}: ${error.message}
+                </div>`;
+        }
+    }
 }
 
 async function checkPoPLocation() {
