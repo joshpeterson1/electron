@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wistia Network Checker</title>
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <h1 class="mb-4">Wistia Network Checker</h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Connectivity Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="connectivity-results"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">CDN PoP Location</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="pop-results"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Traceroute Results</h5>
+            </div>
+            <div class="card-body">
+                <div id="traceroute-results"></div>
+            </div>
+        </div>
+
+        <button id="run-tests" class="btn btn-primary">Run Tests</button>
+    </div>
+
+    <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="renderer.js"></script>
+</body>
+</html>
