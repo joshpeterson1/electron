@@ -48,13 +48,20 @@ async function performTraceroute() {
     for (const url of URLS) {
         try {
             const cleanUrl = url.replace('https://', '').replace('http://', '');
-            const cmd = process.platform === 'win32' ? `tracert -h 30 ${cleanUrl}` : `traceroute -m 30 ${cleanUrl}`;
+            const cmd = process.platform === 'win32' ? 
+                `tracert -h 30 ${cleanUrl}` : 
+                `traceroute -I -m 30 ${cleanUrl}`;
             
-            // Show "in progress" message
+            // Show "in progress" message with spinner
             resultsDiv.innerHTML += `
                 <h6 class="mt-3">${url}</h6>
                 <div class="alert alert-info" id="trace-${cleanUrl}">
-                    Traceroute in progress...
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        Traceroute in progress...
+                    </div>
                 </div>`;
 
             const output = await new Promise((resolve, reject) => {
