@@ -68,8 +68,6 @@ async function performTraceroute() {
                 exec(cmd, {timeout: 30000}, (error, stdout, stderr) => {
                     if (error && error.code === 'ENOENT') {
                         reject(new Error('Traceroute command not found. Please ensure it is installed.'));
-                    } else if (error && error.code === 'EACCES') {
-                        reject(new Error('Permission denied. Try running the app with administrator privileges.'));
                     } else if (error) {
                         // Some errors are expected and contain useful output
                         resolve(stdout || stderr);

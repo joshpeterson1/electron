@@ -1,6 +1,9 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
+// Prevent D-Bus error messages
+process.env.DBUS_SESSION_BUS_ADDRESS = '';
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
