@@ -2,22 +2,29 @@ const { exec } = require('node:child_process');
 const { ipcRenderer } = require('electron');
 
 // Theme handling
-let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+let isSystemTheme = true;
+let isDarkMode = darkModeMediaQuery.matches;
 
 function updateTheme() {
+    if (isSystemTheme) {
+        isDarkMode = darkModeMediaQuery.matches;
+    }
     document.body.setAttribute('data-bs-theme', isDarkMode ? 'dark' : 'light');
     document.body.classList.toggle('bg-dark', isDarkMode);
     document.body.classList.toggle('text-light', isDarkMode);
 }
 
 // Listen for system theme changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-    isDarkMode = e.matches;
-    updateTheme();
+darkModeMediaQuery.addEventListener('change', (e) => {
+    if (isSystemTheme) {
+        updateTheme();
+    }
 });
 
 // Listen for menu toggle
 ipcRenderer.on('toggle-dark-mode', () => {
+    isSystemTheme = false;
     isDarkMode = !isDarkMode;
     updateTheme();
 });
