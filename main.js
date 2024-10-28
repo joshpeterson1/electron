@@ -1,8 +1,31 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 
 // Prevent D-Bus error messages
 process.env.DBUS_SESSION_BUS_ADDRESS = '';
+
+function createApplicationMenu() {
+  const template = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Toggle Dark Mode',
+          click: () => {
+            BrowserWindow.getAllWindows().forEach(window => {
+              window.webContents.send('toggle-dark-mode');
+            });
+          }
+        },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    }
+  ];
+  
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -18,6 +41,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  createApplicationMenu();
   createWindow();
 
   app.on('activate', () => {
