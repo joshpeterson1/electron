@@ -3,12 +3,20 @@ const dns = require('node:dns');
 const axios = require('axios');
 const geoip = require('geoip-lite');
 
+// All URLs to check connectivity
 const URLS = [
     'https://wistia.com',
     'https://fast.wistia.com',
     'https://fast.wistia.net',
     'https://www.google-analytics.com/collect',
     'https://track.hubspot.com'
+];
+
+// Only Wistia URLs for detailed checks
+const WISTIA_URLS = [
+    'https://wistia.com',
+    'https://fast.wistia.com',
+    'https://fast.wistia.net'
 ];
 
 document.getElementById('run-tests').addEventListener('click', runAllTests);
@@ -23,7 +31,7 @@ async function runAllTests() {
 async function checkConnectivity() {
     const resultsDiv = document.getElementById('connectivity-results');
     
-    for (const url of URLS) {
+    for (const url of WISTIA_URLS) {
         try {
             const startTime = Date.now();
             await axios.get(url);
@@ -45,7 +53,7 @@ async function checkConnectivity() {
 async function performTraceroute() {
     const resultsDiv = document.getElementById('traceroute-results');
     
-    for (const url of URLS) {
+    for (const url of WISTIA_URLS) {
         try {
             const cleanUrl = url.replace('https://', '').replace('http://', '');
             const cmd = process.platform === 'win32' ? 
