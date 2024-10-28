@@ -31,7 +31,7 @@ async function runAllTests() {
 async function checkConnectivity() {
     const resultsDiv = document.getElementById('connectivity-results');
     
-    for (const url of WISTIA_URLS) {
+    for (const url of URLS) {
         try {
             const startTime = Date.now();
             await axios.get(url);
