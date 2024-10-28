@@ -48,44 +48,43 @@ async function performTraceroute() {
     for (const url of URLS) {
         try {
             const cleanUrl = url.replace('https://', '').replace('http://', '');
-            const cmd = process.platform === 'win32' ? `tracert ${cleanUrl}` : `traceroute ${cleanUrl}`;
+            const cmd = process.platform === 'win32' ? `tracert -h 30 ${cleanUrl}` : `traceroute -m 30 ${cleanUrl}`;
             
-            const output = await new Promise((resolve, reject) => {
-                exec(cmd, (error, stdout, stderr) => {
-                    if (error) reject(error);
-                    else resolve(stdout);
-                });
-            });
-
-            // Parse the output into a more readable format
-            const hops = output.split('\n')
-                .filter(line => line.match(/^\s*\d+/)) // Only lines starting with numbers
-                .map(line => {
-                    const parts = line.trim().split(/\s+/);
-                    return {
-                        hop: parts[0],
-                        ip: parts[1],
-                        time: parts[parts.length - 1]
-                    };
-                });
-
-            let hopsList = '<ul class="list-group">';
-            hops.forEach(hop => {
-                hopsList += `
-                    <li class="list-group-item">
-                        ${hop.hop}. ${hop.ip} (${hop.time})
-                    </li>`;
-            });
-            hopsList += '</ul>';
-
+            // Show "in progress" message
             resultsDiv.innerHTML += `
                 <h6 class="mt-3">${url}</h6>
-                ${hopsList}`;
-        } catch (error) {
-            resultsDiv.innerHTML += `
-                <div class="alert alert-danger">
-                    Traceroute failed for ${url}: ${error.message}
+                <div class="alert alert-info" id="trace-${cleanUrl}">
+                    Traceroute in progress...
                 </div>`;
+
+            const output = await new Promise((resolve, reject) => {
+                exec(cmd, {timeout: 30000}, (error, stdout, stderr) => {
+                    if (error && error.code === 'ENOENT') {
+                        reject(new Error('Traceroute command not found. Please ensure it is installed.'));
+                    } else if (error && error.code === 'EACCES') {
+                        reject(new Error('Permission denied. Try running the app with administrator privileges.'));
+                    } else if (error) {
+                        // Some errors are expected and contain useful output
+                        resolve(stdout || stderr);
+                    } else {
+                        resolve(stdout);
+                    }
+                });
+            });
+
+            // Update the progress message with results
+            const resultDiv = document.getElementById(`trace-${cleanUrl}`);
+            if (resultDiv) {
+                resultDiv.className = 'alert alert-success';
+                resultDiv.innerHTML = `<pre>${output}</pre>`;
+            }
+
+        } catch (error) {
+            const resultDiv = document.getElementById(`trace-${cleanUrl}`);
+            if (resultDiv) {
+                resultDiv.className = 'alert alert-danger';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
         }
     }
 }
